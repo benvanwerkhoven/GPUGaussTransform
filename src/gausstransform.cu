@@ -4,6 +4,7 @@
 
 #define SQR(X)  ((X)*(X))
 
+/*
 template<typename T>
 T GaussTransform(const T* A, const T* B,
     int m, int n, int dim, T scale) {
@@ -18,12 +19,12 @@ T GaussTransform(const T* A, const T* B,
       T cost_ij = exp(-1.0 * dist_ij / scale);
       cross_term += cost_ij;
     }
-    /* printf("cross_term = %.3f\n", cross_term);  */
   }
   return cross_term / (m * n);
 }
 
 
+*/
 
 
 
@@ -38,6 +39,8 @@ T GaussTransform(const T* A, const T* B,
 template<typename T, int dim>
 __device__ void GaussTransform_blocked_i(const T *A, const T *B,
                  int m, int n, T scale_sq, T *d_grad, T *d_cross_term) {
+
+    int tx = threadIdx.x;
 
     // Specialize BlockReduce for a 1D block of block_size_x threads on type float
     typedef cub::BlockReduce<float, block_size_x> BlockReduce;
@@ -55,7 +58,7 @@ __device__ void GaussTransform_blocked_i(const T *A, const T *B,
     if (i>=m) return;
 
     //loop parallelized over threads within thread block
-    for (int j = threadIdx.x; j<n; j+=block_size_x) {
+    for (int j = tx; j<n; j+=block_size_x) {
 
         T dist_ij = 0;
         for (int d = 0; d < dim; ++d) {
@@ -78,8 +81,7 @@ __device__ void GaussTransform_blocked_i(const T *A, const T *B,
     //reduce cross_term within the block, (division by m*n on CPU)
     cross_term = BlockReduce(temp_storage).Sum(cross_term);
 
-
-    if (tx == 0) {
+    if (tx == 0 && blockIdx.x < m) {
         for (int d = 0; d < dim; d++) {
             d_grad[blockIdx.x * dim + d] = grad_i[d];
         }
