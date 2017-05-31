@@ -3,6 +3,7 @@ import numpy
 
 from kernel_tuner import run_kernel
 
+from test_utils import get_kernel_path
 
 def test_gausstransform_ref():
 
@@ -16,21 +17,18 @@ def test_gausstransform_ref():
 
     arguments = [cost, A, B, size, size, ndim, scale, grad]
 
-    with open('../src/gausstransform_c.cpp', 'r') as f:
+    with open(get_kernel_path()+'gausstransform_c.cpp', 'r') as f:
         kernel_string = f.read()
 
     answer = run_kernel("call_GaussTransform", kernel_string, size, arguments, {},
-               lang="C", compiler_options=['-I../src/'])
+               lang="C", compiler_options=['-I'+get_kernel_path()])
 
     cost = answer[0]
     print(cost)
 
     assert 1.0 > cost and cost > 0.0
 
-
-
-
     gradient = answer[7]
     print(gradient)
 
-    assert False
+    #TODO: somehow assert that the gradient results are sensible
