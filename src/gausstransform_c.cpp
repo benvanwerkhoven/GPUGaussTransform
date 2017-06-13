@@ -26,6 +26,5 @@ float time_GaussTransform(double* cost, const double* A, const double* B, int m,
     return (float)((omp_get_wtime() - start)*1e3);
 }
 
-
 }
 
