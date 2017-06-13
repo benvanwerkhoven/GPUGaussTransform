@@ -1,41 +1,18 @@
 #include <cub/cub.cuh>
 
-
-
-#define SQR(X)  ((X)*(X))
-
-/*
-template<typename T>
-T GaussTransform(const T* A, const T* B,
-    int m, int n, int dim, T scale) {
-  T cross_term = 0;
-  scale = SQR(scale);
-  for (int i = 0; i < m; ++i) {
-    for (int j = 0; j < n; ++j) {
-      T dist_ij = 0;
-      for (int d = 0; d < dim; ++d) {
-        dist_ij += SQR(A[i * dim + d] - B[j * dim + d]);
-      }
-      T cost_ij = exp(-1.0 * dist_ij / scale);
-      cross_term += cost_ij;
-    }
-  }
-  return cross_term / (m * n);
-}
-
-
-*/
-
-
-
 #ifndef block_size_x
     #define block_size_x 128    //best for GTX 690
 #endif
 
-
-
-
-
+/*
+ * This function performs the main body of work for computing the Gauss transform
+ * The parallelization is such that one thread block is created
+ * for each item in A, which is of size m. This implies that each thread block
+ * does n (size of B) work.
+ * The gradient computed in this function is reduced to a single value within the
+ * thread block. The same is done for the cross term, which then needs to be
+ * reduced in a second kernel. 
+ */
 template<typename T, int dim>
 __device__ void GaussTransform_blocked_i(const T *A, const T *B,
                  int m, int n, T scale_sq, T *d_grad, T *d_cross_term) {
@@ -89,7 +66,6 @@ __device__ void GaussTransform_blocked_i(const T *A, const T *B,
     }
 }
 
-
 extern "C"
 __global__ void GaussTransform(const double* A, const double* B,
                  int m, int n, double scale_sq, double *grad, double *cross_term) {
@@ -99,15 +75,15 @@ __global__ void GaussTransform(const double* A, const double* B,
 
 }
 
-
-
-
-
-// Reduce the per thread block cross terms computed in the GaussTransform kernel to single value
-// and divide by (m*n)
-//
-// This kernel is designed to run as single-thread block, because the number of terms to reduce is
-// of size n or m, which is expected to be around 2000 or so
+/*
+ * Reduce the per thread block cross terms computed in the GaussTransform kernel to single value
+ * and divide by (m*n)
+ *
+ * This kernel is designed to run as single-thread block, because the number of terms to reduce is
+ * of size n or m, which is expected to be around 2000 or so. The number of items to reduce
+ * is passed as the last argument 'nblocks', which corresponds to the number of thread blocks used
+ * by the first kernel.
+ */
 extern "C"
 __global__ void reduce_cross_term(double *output, double *d_cross_term, int m, int n, int nblocks) {
 
