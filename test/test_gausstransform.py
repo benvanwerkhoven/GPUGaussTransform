@@ -45,7 +45,7 @@ def test_gausstransform():
     ref_cost, ref_gradient = call_reference_function(size, ndim, A, B, scale, grad, cost)
 
     #call the GPU function
-    with open(get_kernel_path()+'gausstransform.cu', 'r') as f:
+    with open(get_kernel_path()+'kernels.cu', 'r') as f:
         kernel_string = f.read()
 
     scale_sq = (scale*scale).astype(numpy.float64)
