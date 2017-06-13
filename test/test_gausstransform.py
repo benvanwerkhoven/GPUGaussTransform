@@ -1,11 +1,13 @@
 
+from nose.tools import nottest
 import numpy
-
 from kernel_tuner import run_kernel
 
 from test_utils import get_kernel_path
 
-from nose.tools import nottest
+compiler_options = ['-I'+get_kernel_path()]
+
+
 
 @nottest
 def generate_inputs():
@@ -24,7 +26,7 @@ def call_reference_function(size, ndim, A, B, scale, grad, cost):
     with open(get_kernel_path()+'gausstransform_c.cpp', 'r') as f:
         kernel_string = f.read()
     answer = run_kernel("call_GaussTransform", kernel_string, size, arguments, {},
-               lang="C", compiler_options=['-I'+get_kernel_path()])
+               lang="C", compiler_options=compiler_options)
     ref_cost = answer[0][0]
     print("reference")
     print(ref_cost)
@@ -51,7 +53,7 @@ def test_gausstransform():
 
     params = {"block_size_x": 256}
     answer = run_kernel("GaussTransform", kernel_string, size, arguments, params,
-               compiler_options=['-I../src/'], grid_div_x=[])
+               compiler_options=compiler_options, grid_div_x=[])
 
     #collect the results from the first kernel
     grad_i = answer[5]
@@ -62,7 +64,7 @@ def test_gausstransform():
     out = numpy.zeros(1).astype(numpy.float64)
     arguments = [out, cross_term, size, size, size]
     answer = run_kernel("reduce_cross_term", kernel_string, 1, arguments, params,
-               compiler_options=['-I../src/'], grid_div_x=[])
+               compiler_options=compiler_options, grid_div_x=[])
 
     #final cross term
     cost = answer[0]
@@ -91,7 +93,7 @@ def test_hostfunction():
     with open(get_kernel_path()+'gausstransform.cu', 'r') as f:
         kernel_string = f.read()
     answer = run_kernel("test_GaussTransformHost", kernel_string, size, arguments, {},
-               lang="C", compiler_options=['-I'+get_kernel_path(), '-arch=sm_30'])
+               lang="C", compiler_options=compiler_options+['-arch=sm_30'])
     cost = answer[0][0]
     print("reference")
     print(ref_cost)
