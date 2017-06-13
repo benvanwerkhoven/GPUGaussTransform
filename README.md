@@ -74,4 +74,12 @@ directory:
 nosetests -v
 ```
 
+### Building the code
+
+A Makefile is provided that can be used to produce an object file. 
+The object file can be used to link the code to your application.
+Simply type ``make`` in the top-level directory.
+
+Note that, the CUDA path inside the Makefile should be changed to your local configuration.
+
 
