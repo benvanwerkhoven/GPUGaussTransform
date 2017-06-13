@@ -78,8 +78,8 @@ nosetests -v
 
 A Makefile is provided that can be used to produce an object file. 
 The object file can be used to link the code to your application.
-Simply type ``make`` in the top-level directory.
+Simply type ``make`` in the top-level directory and the object file will be produced in the `bin/` directory.
 
-Note that, the CUDA path inside the Makefile should be changed to your local configuration.
+Note that, the CUDA path inside the Makefile should be changed to match your local configuration.
 
 
