@@ -16,6 +16,8 @@ as such it should be reused for as many calls to ``compute()`` as possible.
 The GPU code currently assumes double precision and 2 dimensional coordinates for the models.
 
 ```
+    #include "gausstransform.h"
+
     //instantiate GPUGaussTransform object
     GPUGaussTransform gpu_gt(m);
 
