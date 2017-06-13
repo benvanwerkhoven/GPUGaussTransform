@@ -41,7 +41,7 @@ def test_gausstransform():
                compiler_options=['-I../src/'], grid_div_x=[])
 
     grad_i = answer[5]
-    gradient = grad_i / (scale_sq * size * size)
+    gradient = grad_i
 
     cross_term = answer[6]
     cost = numpy.sum(cross_term) / (size * size)

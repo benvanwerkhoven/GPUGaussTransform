@@ -83,7 +83,7 @@ __device__ void GaussTransform_blocked_i(const T *A, const T *B,
 
     if (tx == 0 && blockIdx.x < m) {
         for (int d = 0; d < dim; d++) {
-            d_grad[blockIdx.x * dim + d] = grad_i[d];
+            d_grad[blockIdx.x * dim + d] = grad_i[d] / (scale_sq * m * n);
         }
         d_cross_term[blockIdx.x] = cross_term;
     }
