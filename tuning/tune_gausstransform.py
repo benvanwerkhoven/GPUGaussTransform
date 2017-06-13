@@ -37,8 +37,20 @@ def tune_gausstransform():
     arguments = [A, B, size, size, scale_sq, grad, cost]
 
     tune_params = {"block_size_x": [32, 64, 128, 256, 512, 1024]}
-    tune_kernel("GaussTransform", kernel_string, size, arguments, tune_params,
+    kernel1 = tune_kernel("GaussTransform", kernel_string, size, arguments, tune_params,
                 grid_div_x=[], compiler_options=['-O3'])
+
+    arguments = [numpy.zeros(1).astype(numpy.float64), cost, size, size, size]
+    kernel2 = tune_kernel("reduce_cross_term", kernel_string, 1, arguments, tune_params,
+                grid_div_x=[], compiler_options=['-O3'])
+
+
+    best_config1 = min(kernel1[0], key=lambda x:x['time'])
+    best_config2 = min(kernel2[0], key=lambda x:x['time'])
+
+    print("best GPU configuration, total time=", best_config1['time'] + best_config2['time'])
+    print(best_config1)
+    print(best_config2)
 
 
 

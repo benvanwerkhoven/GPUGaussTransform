@@ -29,7 +29,7 @@ T GaussTransform(const T* A, const T* B,
 
 
 #ifndef block_size_x
-    #define block_size_x 256
+    #define block_size_x 128    //best for GTX 690
 #endif
 
 
@@ -42,8 +42,8 @@ __device__ void GaussTransform_blocked_i(const T *A, const T *B,
 
     int tx = threadIdx.x;
 
-    // Specialize BlockReduce for a 1D block of block_size_x threads on type float
-    typedef cub::BlockReduce<float, block_size_x> BlockReduce;
+    // Specialize BlockReduce for a 1D block of block_size_x threads on type T
+    typedef cub::BlockReduce<T, block_size_x> BlockReduce;
     // Allocate shared memory for BlockReduce
     __shared__ typename BlockReduce::TempStorage temp_storage;
 
@@ -99,3 +99,35 @@ __global__ void GaussTransform(const double* A, const double* B,
 
 }
 
+
+
+
+
+// Reduce the per thread block cross terms computed in the GaussTransform kernel to single value
+// and divide by (m*n)
+//
+// This kernel is designed to run as single-thread block, because the number of terms to reduce is
+// of size n or m, which is expected to be around 2000 or so
+extern "C"
+__global__ void reduce_cross_term(double *output, double *d_cross_term, int m, int n, int nblocks) {
+
+    int tx = threadIdx.x;
+    // Specialize BlockReduce for a 1D block of block_size_x threads on type T
+    typedef cub::BlockReduce<double, block_size_x> BlockReduce;
+    // Allocate shared memory for BlockReduce
+    __shared__ typename BlockReduce::TempStorage temp_storage;
+
+    double cross_term = 0.0;
+    for (int i=tx; i<nblocks; i+=block_size_x) {
+        cross_term += d_cross_term[i];
+    }
+
+    //reduce to single value within thread block
+    cross_term = BlockReduce(temp_storage).Sum(cross_term);
+
+    //thread 0 writes output
+    if (tx == 0) {
+        output[0] = cross_term / (m*n);
+    }
+
+}

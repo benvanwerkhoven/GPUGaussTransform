@@ -40,11 +40,19 @@ def test_gausstransform():
     answer = run_kernel("GaussTransform", kernel_string, size, arguments, params,
                compiler_options=['-I../src/'], grid_div_x=[])
 
+    #collect the results from the first kernel
     grad_i = answer[5]
     gradient = grad_i
-
     cross_term = answer[6]
-    cost = numpy.sum(cross_term) / (size * size)
+
+    #call the second kernel to reduce the per thread block cross terms to a single value
+    out = numpy.zeros(1).astype(numpy.float64)
+    arguments = [out, cross_term, size, size, size]
+    answer = run_kernel("reduce_cross_term", kernel_string, 1, arguments, params,
+               compiler_options=['-I../src/'], grid_div_x=[])
+
+    #final cross term
+    cost = answer[0]
 
     print("answer")
     print(cost)
