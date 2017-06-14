@@ -76,10 +76,10 @@ nosetests -v
 
 ### Building the code
 
-A Makefile is provided that can be used to produce an object file. 
-The object file can be used to link the code to your application.
-Simply type ``make`` in the top-level directory and the object file will be produced in the `bin/` directory.
+A Makefile is provided that can be used to produce a static library file. 
+Simply type ``make`` in the top-level directory and the static library will be produced in the `bin/` directory.
 
 Note that, the CUDA path inside the Makefile should be changed to match your local configuration.
 
+The static library can be used to link the code to your application, don't forget to also link the CUDA runtime library.
 

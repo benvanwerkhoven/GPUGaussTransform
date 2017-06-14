@@ -1,4 +1,5 @@
 *.o
+*.a
 *.mex*
 __pycache__
 bin/
