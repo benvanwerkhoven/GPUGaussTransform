@@ -14,7 +14,7 @@
  * reduced in a second kernel. 
  */
 template<typename T, int dim>
-__device__ void GaussTransform_blocked_i(const T *A, const T *B,
+__device__ __forceinline__ void GaussTransform_blocked_i(const T *A, const T *B,
                  int m, int n, T scale_sq, T *d_grad, T *d_cross_term) {
 
     int tx = threadIdx.x;
@@ -32,17 +32,19 @@ __device__ void GaussTransform_blocked_i(const T *A, const T *B,
 
     //for (int i = 0; i < m; ++i) { //loop parallelized over threads blocks
     int i = blockIdx.x;
-    if (i>=m) return;
+    //if (i>=m) return; not needed
 
     //loop parallelized over threads within thread block
     for (int j = tx; j<n; j+=block_size_x) {
 
         T dist_ij = 0;
+        #pragma unroll
         for (int d = 0; d < dim; ++d) {
             dist_ij += (A[i * dim + d] - B[j * dim + d])*(A[i * dim + d] - B[j * dim + d]);
         }
         T cost_ij = exp(-1.0 * dist_ij / scale_sq);
 
+        #pragma unroll
         for (int d = 0; d < dim; ++d) {
             grad_i[d] -= cost_ij * 2.0 * (A[i * dim + d] - B[j * dim + d]);
         }
@@ -51,6 +53,7 @@ __device__ void GaussTransform_blocked_i(const T *A, const T *B,
     }
 
     //reduce grad_i for each d, within the block (division by scale^2*m*n on CPU)
+    #pragma unroll
     for (int d = 0; d < dim; d++) {
         grad_i[d] = BlockReduce(temp_storage).Sum(grad_i[d]);
     }
@@ -59,6 +62,7 @@ __device__ void GaussTransform_blocked_i(const T *A, const T *B,
     cross_term = BlockReduce(temp_storage).Sum(cross_term);
 
     if (tx == 0 && blockIdx.x < m) {
+        #pragma unroll
         for (int d = 0; d < dim; d++) {
             d_grad[blockIdx.x * dim + d] = grad_i[d] / (scale_sq * m * n);
         }
@@ -66,8 +70,10 @@ __device__ void GaussTransform_blocked_i(const T *A, const T *B,
     }
 }
 
+
 extern "C"
-__global__ void GaussTransform(const double* A, const double* B,
+__global__ void
+GaussTransform(const double* A, const double* B,
                  int m, int n, double scale_sq, double *grad, double *cross_term) {
 
     //2-dimensional with double precision

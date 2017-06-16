@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python
 from nose.tools import nottest
 import numpy
 from kernel_tuner import run_kernel
@@ -108,3 +108,7 @@ def test_hostfunction():
     assert numpy.isclose(ref_cost, cost, atol=1e-5)
     assert numpy.allclose(ref_gradient, gradient, atol=1e-4)
 
+
+
+if __name__ == "__main__":
+    test_gausstransform()
