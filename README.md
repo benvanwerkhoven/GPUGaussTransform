@@ -22,7 +22,7 @@ The GPU code currently assumes double precision and 2 dimensional coordinates fo
     GPUGaussTransform gpu_gt(m);
 
     //call the cost function
-    *cost = gpu_gt.compute(A, B, m, n, scale, grad);
+    double cost = gpu_gt.compute(A, B, m, n, scale, grad);
 
 ```
 
