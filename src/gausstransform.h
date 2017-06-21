@@ -1,3 +1,6 @@
+#pragma once
+
+#include <cuda_runtime.h>
 
 class GPUGaussTransform {
     public:
