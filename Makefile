@@ -12,10 +12,10 @@ CC_FLAGS = -O3 -m64 -fPIC
 SMS ?= 30 35 37 50 52 60
 $(foreach sm,$(SMS),$(eval GENCODE_FLAGS += -gencode arch=compute_$(sm),code=sm_$(sm)))
 
-all: $(OUTPUT_DIR)/gausstransform.a
+all: $(OUTPUT_DIR)/gausstransform.so
 
-$(OUTPUT_DIR)/gausstransform.a: $(OUTPUT_DIR)/gausstransform.o $(OUTPUT_DIR)/kernels.o
-	ar -crs $(OUTPUT_DIR)/gausstransform.a $(OUTPUT_DIR)/gausstransform.o $(OUTPUT_DIR)/kernels.o
+$(OUTPUT_DIR)/gausstransform.so: $(OUTPUT_DIR)/gausstransform.o
+	nvcc $(NVCC_FLAGS) $(GENCODE_FLAGS) $< -shared -o $@
 
 $(OUTPUT_DIR)%.o: $(SOURCE_DIR)%.cu $(OUTPUT_DIR)
 	nvcc $(NVCC_FLAGS) $(GENCODE_FLAGS) -c $< -o $@
@@ -25,6 +25,3 @@ $(OUTPUT_DIR):
 
 clean:
 	rm -rf $(OUTPUT_DIR)
-
-
-
