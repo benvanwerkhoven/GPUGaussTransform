@@ -6,7 +6,7 @@
 
 #include "gausstransform.h"
 
-#define block_size_x 128    //best for GTX 690
+#define block_size_x 128    //best for GTX 690 and K40
 
 #include "kernels.cu"
 
