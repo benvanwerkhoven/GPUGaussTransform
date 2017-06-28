@@ -109,7 +109,7 @@ extern "C"
 float test_GaussTransformHost(double *cost, const double* A, const double* B,
             int m, int n, int dim, double scale, double* grad) {
 
-    GPUGaussTransform gpu_gt(m);
+    GPUGaussTransform gpu_gt(1000000);
 
     *cost = gpu_gt.compute(A, B, m, n, scale, grad);
 
