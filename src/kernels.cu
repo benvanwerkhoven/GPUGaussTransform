@@ -56,6 +56,7 @@ __device__ __forceinline__ void GaussTransform_blocked_i(const T *A, const T *B,
     #pragma unroll
     for (int d = 0; d < dim; d++) {
         grad_i[d] = BlockReduce(temp_storage).Sum(grad_i[d]);
+        __syncthreads();
     }
 
     //reduce cross_term within the block, (division by m*n on CPU)
